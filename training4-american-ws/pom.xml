@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.mycompany</groupId>
-	<artifactId>apdev-examples</artifactId>
+	<artifactId>training4-american-ws</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>mule-application</packaging>
 
-	<name>apdev-examples</name>
+	<name>training4-american-ws</name>
 
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,7 +30,13 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-				</configuration>
+				<sharedLibraries>
+                        <sharedLibrary>
+                            <groupId>mysql</groupId>
+                            <artifactId>mysql-connector-java</artifactId>
+                        </sharedLibrary>
+                    </sharedLibraries>
+                </configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -50,8 +56,26 @@
         </dependency>
 		<dependency>
             <groupId>org.mule.connectors</groupId>
-            <artifactId>mule-vm-connector</artifactId>
-            <version>2.0.0</version>
+            <artifactId>mule-db-connector</artifactId>
+            <version>1.8.0</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    	<dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.20</version>
+        </dependency>
+    	<dependency>
+            <groupId>50eb91e4-8a16-4ff8-80c4-996cb81f7b8a</groupId>
+            <artifactId>american-flights-app</artifactId>
+            <version>1.0.1</version>
+            <classifier>raml</classifier>
+            <type>zip</type>
+        </dependency>
+    	<dependency>
+            <groupId>org.mule.modules</groupId>
+            <artifactId>mule-apikit-module</artifactId>
+            <version>1.3.12</version>
             <classifier>mule-plugin</classifier>
         </dependency>
     </dependencies>
