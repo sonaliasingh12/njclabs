@@ -1,7 +1,0 @@
-http:
-  port: "8081"
-  
-sfdc:
-  username : sonali.singh@reesby.com
-  password : "@Shona1205"
-  token : GTHTPFQu8zwXJRuEnXmkVWuI

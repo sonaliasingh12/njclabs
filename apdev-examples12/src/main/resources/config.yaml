@@ -1,0 +1,18 @@
+http:
+  port: "8081"
+  
+sfdc:
+  username : sonali.singh@reesby.com
+  password : "@Shona1205"
+  token : GTHTPFQu8zwXJRuEnXmkVWuI
+  
+file:
+  accountsDir: "/Users/61470/Desktop/Selflearning/MUFundamentals4.3_studentFiles_12may2020/MUFundamentals4.3_studentFiles_12may2020/resources"
+  
+  
+db:
+  host: "mudb.learn.mulesoft.com"
+  port: "3306"
+  user: "mule"
+  password: "mule"
+  database: "training"
