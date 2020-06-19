@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="ae852382-b97d-41b0-b4ec-6713f8359d29" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="a4c336c2-513b-4e18-a4a0-d370e3db2f22" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="bc48f2c1-ebe3-4680-aa80-2461c9fce7ba" >
+		<vm:queues >
+			<vm:queue queueName="goodbye" />
+		</vm:queues>
+	</vm:config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="3b468a45-5c27-41ed-827a-30667503d8bf" >
+		<salesforce:basic-connection username="${sfdc.username}" password="${sfdc.password}" securityToken="${sfdc.token}" />
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="db487941-08fa-4473-ab40-5512bc99fcb7" file="config.yaml" />
+	<file:config name="File_Config" doc:name="File Config" doc:id="12f3a22e-ef97-4be5-8a89-4256e82353e4" >
+		<file:connection workingDir="${file.accountsDir}" />
+	</file:config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="c3be3975-ecee-4ba2-adfa-b084aa20d4af" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
+	</db:config>
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="39d891ed-fa96-45f8-9031-a5c6cdc6187e" >
+		<jms:active-mq-connection >
+			<jms:factory-configuration />
+		</jms:active-mq-connection>
+	</jms:config>
+	
+	
+</mule>
+
+
+
+	
