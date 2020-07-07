@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="bb4055cf-997e-4e02-a143-867ab945f7b4" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="0c5c3cd3-8751-44af-94cc-dc817c3bc267" file="dev-configuration.yaml" />
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="24595483-5fa1-4e50-827e-7aa10aa5c4be" >
+		<vm:queues >
+			<vm:queue queueName="validate" />
+		</vm:queues>
+	</vm:config>
+	<flow name="batch_job" doc:id="4510c648-454f-451a-a628-7bc2560bee29" initialState="started">
+		<scheduler doc:name="Scheduler" doc:id="b60828d9-7534-4f5c-9ce0-fdf15c8bfd2f" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="5" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<os:retrieve doc:name="Get:lastTrans" doc:id="6d093dc0-9262-410f-ba96-88f1e019e8bb" key="lastTransID" target="lastTransID">
+			<os:default-value ><![CDATA[0]]></os:default-value>
+		</os:retrieve>
+		<db:select doc:name="Select" doc:id="b24ddb87-dcd6-4c9f-b4f1-934a3e522d19" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM flights_transactions WHERE transactionID > :lastTransID LIMIT 10]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	lastTransID : vars.lastTransID
+}]]]></db:input-parameters>
+		</db:select>
+		<os:store doc:name="ObjectStore:maxTransID" doc:id="e9b83938-bf1c-4df7-8108-cfe89431ce86" key="lastTransID">
+			<os:value ><![CDATA[#[max(payload.*transactionID)]]]></os:value>
+		</os:store>
+		<batch:job jobName="audittransactionsBatch_Job" doc:id="0597e07b-373a-460c-89ac-47252ffaa5cb" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="d0a645b1-0820-46d1-81ff-ffc6944731cf" >
+					<vm:publish-consume queueName="validate" doc:name="VM:validate queue" doc:id="c1633d85-f9a0-4a6a-b356-cfdadee7b475" config-ref="VM_Config" target="valid" timeout="30"/>
+				</batch:step>
+				<batch:step name="Batch_Step1" doc:id="79577911-cf73-4286-a12c-4519bc38535a" acceptExpression="#[vars.valid]">
+					<batch:aggregator doc:name="Write Aggregator" doc:id="fb5d753e-02a5-43f1-97eb-f9f5ed647e25" size="50">
+						<file:write doc:name="Write" doc:id="7f0fcd5c-26b4-4bde-a8a6-6f0b29c4787e" path="#[&quot;$(p('fileoutput'))/batchFile_$(now() as String {format: 'YYYY-MM-dd-HH.mm.SS'}).csv&quot;]">
+							<file:content ><![CDATA[#[output application/csv --- payload]]]></file:content>
+						</file:write>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="147e5fb5-22c7-4eea-a1a1-af260fe10614" />
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<flow name="validate" doc:id="59755d1c-c4b0-4442-a5f6-735728badae8" >
+		<vm:listener doc:name="Listener" doc:id="4a6c8061-e472-41aa-8502-1b0ceadde252" config-ref="VM_Config" queueName="validate"/>
+		<ee:transform doc:name="Transform Message" doc:id="ebbbf029-4e8c-4563-aa4d-4e81056fda50" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+if(mod(payload.transactionID as Number,4)==0)
+ true
+ else
+ false
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
